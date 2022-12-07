@@ -1,0 +1,11 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pvc-apps-jenkins-home{{ required ".Values.projectName" .Values.projectName }}
+  namespace: {{ required ".Values.projectName" .Values.projectName }}
+spec: 
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests: 
+      storage: {{ required ".Values.storage.jenkins.storage" .Values.storage.jenkins.storage }}

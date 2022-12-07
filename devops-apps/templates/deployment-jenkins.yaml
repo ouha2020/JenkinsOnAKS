@@ -1,0 +1,55 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  labels:
+    devops-app: jenkins
+  name: jenkins-{{ required ".Values.projectName" .Values.projectName }}
+  namespace: {{ required ".Values.projectName" .Values.projectName }}
+spec:
+  replicas: {{ required ".Values.deployment.jenkins.replicas" .Values.deployment.jenkins.replicas }}
+  selector:
+    matchLabels:
+      devops-app: jenkins
+  template:
+    metadata:
+      labels:
+        devops-app: jenkins
+      namespace: {{ required ".Values.projectName" .Values.projectName }}
+      name: jenkins-{{ required ".Values.projectName" .Values.projectName }}
+    spec:
+      containers:
+        - name: jenkins
+          image: {{ required ".Values.deployment.jenkins.image" .Values.deployment.jenkins.image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: {{ required ".Values.deployment.jenkins.webPort" .Values.deployment.jenkins.webPort }}
+              name: web
+              protocol: TCP
+            - containerPort: {{ required ".Values.deployment.jenkins.agentPort" .Values.deployment.jenkins.agentPort }}
+              name: agent
+              protocol: TCP
+          resources:
+{{ toYaml .Values.deployment.jenkins.resources | indent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /login
+              port: {{ required ".Values.deployment.jenkins.webPort" .Values.deployment.jenkins.webPort }}
+            initialDelaySeconds: 60
+            timeoutSeconds: 5
+            failureThreshold: 12
+          readinessProbe:
+            httpGet:
+              path: /login
+              port: {{ required ".Values.deployment.jenkins.webPort" .Values.deployment.jenkins.webPort }}
+            initialDelaySeconds: 60
+            timeoutSeconds: 5
+            failureThreshold: 12
+          volumeMounts:
+            - name: jenkins-home
+              mountPath: /var/lib/jenkins
+      volumes:
+        - name: jenkins-home
+          persistentVolumeClaim:
+            claimName: pvc-apps-jenkins-home{{ required ".Values.projectName" .Values.projectName }}
+      serviceAccountName: {{ required ".Values.roles.jenkins.serviceAccount" .Values.roles.jenkins.serviceAccount }}
+          

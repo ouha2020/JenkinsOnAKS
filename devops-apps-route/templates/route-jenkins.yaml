@@ -1,0 +1,40 @@
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    devops-app: jenkins
+  name: jenkins-service
+  namespace: {{ required ".Values.projectName" .Values.projectName }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: web
+      protocol: TCP
+      port: {{ required ".Values.deployment.jenkins.webPort" .Values.deployment.jenkins.webPort }}
+      targetPort: {{ required ".Values.deployment.jenkins.webPort" .Values.deployment.jenkins.webPort }}
+    - name: slave
+      protocol: TCP
+      port: {{ required ".Values.deployment.jenkins.agentPort" .Values.deployment.jenkins.agentPort }}
+      targetPort: {{ required ".Values.deployment.jenkins.agentPort" .Values.deployment.jenkins.agentPort }}
+  selector:
+    devops-app: jenkins
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jenkins-ingress
+  namespace: {{ required ".Values.projectName" .Values.projectName }}
+  annotations:
+    kubernetes.io/ingress.class: addon-http-application-routing
+spec:
+  rules:
+  - host: {{ required ".Values.route.jenkins.domainName" .Values.route.jenkins.domainName }}
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: jenkins-service
+            port:
+              number: {{ required ".Values.deployment.jenkins.webPort" .Values.deployment.jenkins.webPort }}

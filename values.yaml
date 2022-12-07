@@ -1,0 +1,26 @@
+projectName: "devops-apps"
+storage:
+  jenkins:
+    storage: 20Gi
+
+deployment:
+  jenkins:
+    replicas: 1
+    image: jenkins/jenkins:2.375.1-jdk11
+    webPort: 8080
+    agentPort: 50000
+    resources:
+      limits:
+        cpu: 2
+        memory: 4Gi
+      requests:
+        cpu: 1
+        memory: 1Gi
+
+roles:
+  jenkins:
+    serviceAccount: sa-jenkins
+
+route:
+  jenkins:
+    domainName: jenkins.cicd.com
